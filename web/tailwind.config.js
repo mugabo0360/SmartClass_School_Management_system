@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -9,13 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: {
+        primary: {
           50: '#eff6ff',
           600: '#2563eb',
           700: '#1d4ed8',
-          900: '#1e3a5f',
         }
-      },
+      }
     },
   },
   plugins: [],
