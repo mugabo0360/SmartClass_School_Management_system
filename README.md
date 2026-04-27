@@ -34,6 +34,7 @@ SmartClass is an AI-augmented School Management System designed for Ugandan scho
 smartclass/
 ├── supabase/          # Database (Supabase)
 │   └── migrations/    # SQL schema files
+├── backend/           # SmartClass CRM/automation API (Node.js/Express)
 ├── web/               # Next.js 14 App
 │   ├── app/           # Pages & API routes
 │   ├── components/    # React components
@@ -57,6 +58,8 @@ Install these tools on your computer:
 git clone https://github.com/YOUR_USERNAME/smartclass.git
 cd smartclass/web
 npm install
+cd ../backend
+npm install
 ```
 
 ### Step 3: Create Free Accounts
@@ -75,6 +78,12 @@ In Supabase dashboard → SQL Editor → paste and run each file in `supabase/mi
 
 ### Step 6: Start Development
 ```bash
+# terminal 1
+cd web
+npm run dev
+
+# terminal 2
+cd backend
 npm run dev
 ```
 Visit http://localhost:3000 ✅

@@ -69,28 +69,49 @@ Add to `.vscode/settings.json`:
 
 ---
 
-## PART 3: LOCAL DEVELOPMENT
+## PART 3: LOCAL DEVELOPMENT (Web + Backend)
 
 ```bash
 # Clone your repo
 git clone https://github.com/YOUR_USERNAME/smartclass.git
-cd smartclass/web
+cd smartclass
 
-# Install dependencies
+# Install web dependencies
+cd web
 npm install
+cd ..
+
+# Install backend dependencies
+cd backend
+npm install
+cp .env.example .env
+cd ..
 
 # Copy environment variables
 cp .env.example .env.local
 # Now edit .env.local with your actual keys
 
-# Start development server
+# Start web app
+cd web
 npm run dev
 # Open http://localhost:3000
+
+# In another terminal start backend API
+cd backend
+npm run dev
+# API: http://localhost:4000
 ```
 
 ---
 
-## PART 4: DEPLOY TO PRODUCTION
+## PART 4: DEPLOY TO PRODUCTION (Free-first)
+
+### Recommended no-money stack
+- Web app: Vercel (free tier)
+- Database/Auth: Supabase (free tier)
+- Backend API: Render/Railway/Koyeb free tiers (pick one currently available in your region)
+- Redis/Queues (optional later): Upstash free tier
+- WhatsApp API: Meta WhatsApp Cloud API (free test + free conversation allowance to start)
 
 ### Using Vercel (Recommended — Free)
 ```bash

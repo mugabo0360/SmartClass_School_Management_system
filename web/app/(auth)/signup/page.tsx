@@ -87,8 +87,8 @@ export default function SignupPage() {
         }
       }
 
-      toast.success('Account created! Check your email to verify.')
-      router.push('/login?message=Check your email to confirm your account')
+      toast.success('Account created! Check your inbox to verify your email.')
+      router.push('/check-inbox?email=' + encodeURIComponent(form.email))
       
     } catch (error: any) {
       toast.error(error.message || 'Something went wrong')
