@@ -2,6 +2,7 @@
   "name": "smartclass-monorepo",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.9.0",
   "workspaces": [
     "web",
     "backend",
