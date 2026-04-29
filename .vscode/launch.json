@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Web (Next.js)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev --workspace web"
+    },
+    {
+      "name": "Backend (Node)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev --workspace backend"
+    },
+    {
+      "name": "AI Backend (FastAPI)",
+      "type": "python",
+      "request": "launch",
+      "program": "-m",
+      "args": [
+        "uvicorn",
+        "app.main:app",
+        "--reload",
+        "--port",
+        "8001"
+      ],
+      "cwd": "${workspaceFolder}/ai-backend"
+    }
+  ]
+}

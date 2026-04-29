@@ -1,0 +1,20 @@
+{
+  "name": "smartclass-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "backend",
+    "mobile"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,backend -c cyan,green \"npm run dev --workspace web\" \"npm run dev --workspace backend\"",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "turbo": "^2.5.8"
+  }
+}

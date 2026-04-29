@@ -1,0 +1,10 @@
+{
+  "name": "smartclass-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 2 scaffold for Quasar mobile app",
+  "scripts": {
+    "dev": "echo \"Scaffold ready: initialize Quasar app next\"",
+    "build": "echo \"Scaffold ready: configure mobile build next\""
+  }
+}

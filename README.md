@@ -26,6 +26,15 @@ SmartClass is an AI-augmented School Management System designed for Ugandan scho
 
 **Total monthly cost in Month 1: UGX 0**
 
+## 📈 Scale Plan (Free to 1,000 Users)
+
+We are building with a free-first model and scaling in stages:
+- Stage A (0-100 users): core features + AI fallback mode
+- Stage B (100-400 users): rate limits + pagination + caching
+- Stage C (400-1,000 users): background jobs + tighter query optimization
+
+Implementation guide: `docs/FREE_TIER_SCALING_PLAN.md`
+
 ---
 
 ## 📁 Project Structure
