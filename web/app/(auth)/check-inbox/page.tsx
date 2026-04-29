@@ -1,12 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { MailCheck, RefreshCcw } from 'lucide-react'
 
 export default function CheckInboxPage() {
-  const params = useSearchParams()
-  const email = params.get('email')
+  const [email, setEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setEmail(params.get('email'))
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
