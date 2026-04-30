@@ -1,6 +1,7 @@
 // app/(auth)/signup/page.tsx
 'use client'
 import { useState } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -23,12 +24,21 @@ export default function SignupPage() {
     school_district: '',
     school_type: 'Primary',
     role: 'teacher',
+    parent_school_id: '',
     // Legal checkboxes
     accepted_terms: false,
     accepted_privacy: false,
     accepted_data_processing: false,
     confirm_legal_authority: false,
   })
+  const [schools, setSchools] = useState<Array<{ id: string; name: string; district?: string }>>([])
+
+  useEffect(() => {
+    fetch('/api/public/schools')
+      .then((r) => r.json())
+      .then((json) => setSchools(json?.schools || []))
+      .catch(() => setSchools([]))
+  }, [])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +55,12 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
+      if (form.role === 'parent' && !form.parent_school_id) {
+        toast.error('Please select your child school')
+        setLoading(false)
+        return
+      }
+
       // Create user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
@@ -54,38 +70,14 @@ export default function SignupPage() {
             full_name: form.full_name,
             role: form.role,
             phone: form.phone,
+            school_name: form.school_name,
+            school_district: form.school_district,
+            school_id: form.parent_school_id || undefined,
           }
         }
       })
 
       if (error) throw error
-
-      // Create school record
-      if (form.school_name && data.user) {
-        const { data: school, error: schoolError } = await supabase
-          .from('schools')
-          .insert({
-            name: form.school_name,
-            district: form.school_district,
-            school_type: form.school_type,
-            email: form.email,
-            phone: form.phone,
-          })
-          .select()
-          .single()
-
-        if (!schoolError && school) {
-          // Link user to school
-          await supabase
-            .from('profiles')
-            .update({ 
-              school_id: school.id,
-              accepted_terms: true,
-              accepted_terms_at: new Date().toISOString(),
-            })
-            .eq('id', data.user.id)
-        }
-      }
 
       toast.success('Account created! Check your inbox to verify your email.')
       router.push('/check-inbox?email=' + encodeURIComponent(form.email))
@@ -156,6 +148,7 @@ export default function SignupPage() {
                     onChange={e => setForm({...form, role: e.target.value})}>
                     <option value="admin">Head Teacher / Administrator</option>
                     <option value="teacher">Teacher</option>
+                    <option value="parent">Parent</option>
                   </select>
                 </div>
                 <button type="submit" className="w-full sc-btn-primary py-3">
@@ -167,29 +160,52 @@ export default function SignupPage() {
             {/* Step 2: School Info */}
             {step === 2 && (
               <div className="space-y-4">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">School Information</h2>
-                <div>
-                  <label className="sc-label">School Name *</label>
-                  <input className="sc-input" placeholder="Kampala Junior School" value={form.school_name}
-                    onChange={e => setForm({...form, school_name: e.target.value})} required />
-                </div>
-                <div>
-                  <label className="sc-label">District *</label>
-                  <select className="sc-input" value={form.school_district}
-                    onChange={e => setForm({...form, school_district: e.target.value})} required>
-                    <option value="">Select District</option>
-                    {ugandaDistricts.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="sc-label">School Type</label>
-                  <select className="sc-input" value={form.school_type}
-                    onChange={e => setForm({...form, school_type: e.target.value})}>
-                    <option value="Primary">Primary (P1-P7)</option>
-                    <option value="Secondary">Secondary (S1-S6)</option>
-                    <option value="Combined">Combined (Primary + Secondary)</option>
-                  </select>
-                </div>
+                <h2 className="text-lg font-bold text-gray-900 mb-4">
+                  {form.role === 'parent' ? 'Child School Information' : 'School Information'}
+                </h2>
+                {form.role === 'parent' ? (
+                  <div>
+                    <label className="sc-label">Select School *</label>
+                    <select
+                      className="sc-input"
+                      value={form.parent_school_id}
+                      onChange={e => setForm({ ...form, parent_school_id: e.target.value })}
+                      required
+                    >
+                      <option value="">Select your child school</option>
+                      {schools.map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}{s.district ? ` - ${s.district}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="sc-label">School Name *</label>
+                      <input className="sc-input" placeholder="Kampala Junior School" value={form.school_name}
+                        onChange={e => setForm({...form, school_name: e.target.value})} required />
+                    </div>
+                    <div>
+                      <label className="sc-label">District *</label>
+                      <select className="sc-input" value={form.school_district}
+                        onChange={e => setForm({...form, school_district: e.target.value})} required>
+                        <option value="">Select District</option>
+                        {ugandaDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="sc-label">School Type</label>
+                      <select className="sc-input" value={form.school_type}
+                        onChange={e => setForm({...form, school_type: e.target.value})}>
+                        <option value="Primary">Primary (P1-P7)</option>
+                        <option value="Secondary">Secondary (S1-S6)</option>
+                        <option value="Combined">Combined (Primary + Secondary)</option>
+                      </select>
+                    </div>
+                  </>
+                )}
                 <div>
                   <label className="sc-label">Password *</label>
                   <div className="relative">

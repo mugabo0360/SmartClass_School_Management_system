@@ -17,6 +17,15 @@ app.use(cors({ origin: config.corsOrigin }))
 app.use(express.json())
 app.use(morgan('dev'))
 
+app.get('/', (req, res) => {
+  res.json({
+    service: 'smartclass-backend',
+    status: 'running',
+    health: '/health',
+    apiBase: '/api',
+  })
+})
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'smartclass-backend', time: new Date().toISOString() })
 })

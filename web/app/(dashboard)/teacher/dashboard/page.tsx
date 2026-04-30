@@ -7,26 +7,36 @@ import Link from 'next/link'
 export default async function TeacherDashboard() {
   const supabase = createClient()
   
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   // Get profile and school
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*, schools(*)')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
+  const resolvedProfile =
+    profile ||
+    ({
+      full_name: (user.user_metadata as any)?.full_name || user.email || 'Teacher',
+      role: (user.user_metadata as any)?.role || 'teacher',
+      school_id: null,
+      schools: null,
+    } as any)
 
-  if (!profile) redirect('/login')
-
-  const schoolId = profile.school_id
+  const schoolId = resolvedProfile.school_id
 
   // Get stats
-  const [studentsResult, assessmentsResult, pendingRemarksResult] = await Promise.all([
-    supabase.from('students').select('id', { count: 'exact' }).eq('school_id', schoolId).eq('is_active', true),
-    supabase.from('assessments').select('id', { count: 'exact' }).eq('school_id', schoolId).eq('academic_year', '2025'),
-    supabase.from('assessments').select('id', { count: 'exact' }).eq('school_id', schoolId).is('ai_remark', null),
-  ])
+  const [studentsResult, assessmentsResult, pendingRemarksResult] = schoolId
+    ? await Promise.all([
+        supabase.from('students').select('id', { count: 'exact' }).eq('school_id', schoolId).eq('is_active', true),
+        supabase.from('assessments').select('id', { count: 'exact' }).eq('school_id', schoolId).eq('academic_year', '2025'),
+        supabase.from('assessments').select('id', { count: 'exact' }).eq('school_id', schoolId).is('ai_remark', null),
+      ])
+    : [{ count: 0 }, { count: 0 }, { count: 0 }]
 
   const stats = [
     { label: 'Active Students', value: studentsResult.count || 0, icon: Users, color: 'bg-blue-50 text-blue-600', href: '/teacher/students' },
@@ -47,12 +57,18 @@ export default async function TeacherDashboard() {
       {/* Welcome header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
-          Good morning, {profile.full_name?.split(' ')[0]} 👋
+          Good morning, {resolvedProfile.full_name?.split(' ')[0]} 👋
         </h1>
         <p className="text-gray-500 mt-1">
-          {(profile as any).schools?.name} · {new Date().toLocaleDateString('en-UG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          {(resolvedProfile as any).schools?.name || 'School profile pending'} · {new Date().toLocaleDateString('en-UG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
+
+      {(profileError || !profile) && (
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          Live profile data is temporarily unavailable. You can still use basic dashboard actions.
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

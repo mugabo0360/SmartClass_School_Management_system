@@ -34,6 +34,7 @@ We are building with a free-first model and scaling in stages:
 - Stage C (400-1,000 users): background jobs + tighter query optimization
 
 Implementation guide: `docs/FREE_TIER_SCALING_PLAN.md`
+Onboarding flow: `docs/ONBOARDING_FLOW.md`
 
 ---
 

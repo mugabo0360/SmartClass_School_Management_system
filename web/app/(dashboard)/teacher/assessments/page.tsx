@@ -14,10 +14,22 @@ export default async function TeacherAssessmentsPage() {
     .from('profiles')
     .select('id, role, school_id')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!profile || !profile.school_id || !['teacher', 'admin', 'super_admin'].includes(profile.role)) {
-    redirect('/login')
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="sc-card">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Setup needed before viewing assessments</h1>
+          <p className="text-gray-600 mb-4">
+            Your account is signed in, but no school is linked yet. Complete school/profile setup and refresh.
+          </p>
+          <Link href="/teacher/setup" className="sc-btn-primary">
+            Complete Setup
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   const { data: assessments } = await supabase

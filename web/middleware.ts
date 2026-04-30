@@ -27,7 +27,52 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Don't forget to return supabaseResponse
+  const { pathname } = request.nextUrl
+  const isAuthPage =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/forgot-password') ||
+    pathname.startsWith('/reset-password') ||
+    pathname.startsWith('/check-inbox')
+  const isPublicPage =
+    pathname === '/' ||
+    pathname.startsWith('/about') ||
+    pathname.startsWith('/contact') ||
+    pathname.startsWith('/pricing') ||
+    pathname.startsWith('/privacy') ||
+    pathname.startsWith('/terms') ||
+    pathname.startsWith('/refund')
+  const isApiRoute = pathname.startsWith('/api')
+  const isProtectedDashboardRoute =
+    pathname.startsWith('/teacher') ||
+    pathname.startsWith('/parent') ||
+    pathname.startsWith('/admin')
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.includes('-auth-token'))
+
+  // If Supabase is temporarily unreachable, avoid forcing redirect loops.
+  let user: any = null
+  try {
+    const result = await supabase.auth.getUser()
+    user = result.data.user
+  } catch {
+    return supabaseResponse
+  }
+
+  if (
+    !user &&
+    !hasAuthCookie &&
+    isProtectedDashboardRoute &&
+    !isAuthPage &&
+    !isPublicPage &&
+    !isApiRoute
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
   return supabaseResponse
 }
 

@@ -14,6 +14,25 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
 
+  const handleResendVerification = async () => {
+    if (!form.email) {
+      toast.error('Enter your email first')
+      return
+    }
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: form.email,
+    })
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    toast.success('Verification email sent. Check inbox/spam.')
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -24,30 +43,36 @@ export default function LoginPage() {
     })
 
     if (error) {
-      toast.error(error.message)
+      if (error.message.toLowerCase().includes('invalid login credentials')) {
+        toast.error('Invalid credentials or email not verified. Check your inbox, then try again.')
+      } else {
+        toast.error(error.message)
+      }
       setLoading(false)
       return
     }
 
-    // Get user role and redirect accordingly
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .single()
+    // Complete profile + school onboarding via server API (service-role path).
+    const setupRes = await fetch('/api/onboarding/complete', { method: 'POST' })
+    const setupJson = await setupRes.json().catch(() => ({}))
+    if (!setupRes.ok) {
+      toast.error(setupJson?.error || 'Could not complete onboarding')
+      setLoading(false)
+      return
+    }
+    const resolvedProfile = setupJson?.profile
 
-    const role = profile?.role
-    if (role === 'teacher' || role === 'admin') {
+    const role = resolvedProfile?.role
+    if (role === 'teacher' || role === 'admin' || role === 'super_admin') {
       router.push('/teacher/dashboard')
     } else if (role === 'parent') {
       router.push('/parent/dashboard')
-    } else if (role === 'super_admin') {
-      router.push('/admin/dashboard')
     } else {
       router.push('/teacher/dashboard')
     }
     
     toast.success('Welcome back!')
+    setLoading(false)
   }
 
   return (
@@ -109,6 +134,13 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Resend verification email
+            </button>
 
             <button
               type="submit"
